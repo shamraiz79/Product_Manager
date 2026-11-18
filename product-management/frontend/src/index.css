@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@theme { --font-sans: Arial, Helvetica, sans-serif; }
+:root { font-family: Arial, Helvetica, sans-serif; color: #0b102d; background: #f2f5ff; font-synthesis: none; }
+body { margin: 0; min-width: 360px; }
+button, select { cursor: pointer; }
+button, input, select { transition: background-color .18s, box-shadow .18s; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #75baff; outline-offset: 3px; }
+.panel { background: linear-gradient(120deg, #fff, #fafbff); border: 1px solid #e0e6f6; box-shadow: 0 2px 2px #10275a05, 0 7px 15px #10275a06; }
+.primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: #0755ff; color: white; border: 1px solid #0755ff; border-radius: 10px; padding: 12px 20px; font-size: 16px; font-weight: 500; }
+.primary-button:hover { background: #0045dd; }
+.secondary-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #ccd5ed; border-radius: 10px; padding: 12px 19px; color: #283d70; background: #ffffff80; font-size: 16px; box-shadow: 0 1px 2px #182a5b08; }
+.secondary-button:hover { background: #edf3ff; }
+.field { width: 100%; border: 1px solid #ccd5ed; padding: 12px; border-radius: 9px; background: white; margin-top: 7px; }

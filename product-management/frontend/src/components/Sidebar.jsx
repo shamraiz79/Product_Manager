@@ -1,0 +1,10 @@
+import { Box, House, Tag, Settings, ChevronDown, X } from 'lucide-react';
+
+export default function Sidebar({ page, onNavigate, open, onClose, profile }) {
+  return <><div onClick={onClose} className={`${open ? 'fixed' : 'hidden'} inset-0 z-30 bg-slate-950/40 lg:hidden`} />
+    <aside className={`fixed inset-y-0 left-0 z-40 flex w-[302px] flex-col bg-[linear-gradient(145deg,#111d32,#071e43)] px-4 text-white transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className="flex items-center gap-3 px-4 pt-8 pb-10"><Box size={45} strokeWidth={1.6} className="text-[#52b1ff]"/><span className="text-[23px] font-bold tracking-[-.6px]">Product<span className="text-[#7bc1ff]">Manager</span></span><button onClick={onClose} aria-label="Close navigation" className="ml-auto lg:hidden"><X size={18}/></button></div>
+      <nav className="space-y-1">{[{ name: 'Dashboard', icon: House }, { name: 'Products', icon: Box }, { name: 'Categories', icon: Tag }, { name: 'Settings', icon: Settings }].map(({ name, icon: Icon }) => <button key={name} onClick={() => { onNavigate(name); onClose(); }} aria-current={page === name ? 'page' : undefined} className={`flex w-full items-center gap-6 rounded-xl px-5 py-[16px] text-[18px] font-medium ${page === name ? 'bg-[#0766ff] shadow-lg shadow-blue-950/20' : 'hover:bg-white/10'}`}><Icon size={26} strokeWidth={1.9} fill={name === 'Dashboard' && page === name ? 'white' : 'none'}/>{name}</button>)}</nav>
+      <button onClick={() => onNavigate('Settings')} className="mx-2 mt-auto mb-8 flex items-center gap-3 border-t border-[#334e77] pt-6 text-left"><div className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full border-2 border-white bg-blue-100 text-lg font-bold text-blue-800">{profile.name.split(' ').map(s => s[0]).slice(0,2).join('')}</div><span className="min-w-0"><span className="block truncate text-lg font-bold">{profile.name}</span><span className="block truncate text-base text-blue-100">{profile.email}</span></span><ChevronDown size={21} className="ml-auto shrink-0"/></button>
+    </aside></>;
+}
