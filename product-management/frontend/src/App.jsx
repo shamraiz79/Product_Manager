@@ -6,21 +6,36 @@ import Products from './pages/Products';
 import AddProduct from './pages/AddProduct';
 import EditProduct from './pages/EditProduct';
 import { initialProducts } from './data';
+import { productAPI } from './services/api';
 
 function readSaved(key, fallback) { try { const value = JSON.parse(localStorage.getItem(key)); return value ?? fallback; } catch { return fallback; } }
 export default function App() {
-  const [products, setProducts] = useState(() => { const saved = readSaved('pm-products-v1', initialProducts); return Array.isArray(saved) && saved.every(p => p && typeof p.name === 'string' && typeof p.sku === 'string' && typeof p.price === 'number' && typeof p.stock === 'number') ? saved : initialProducts; });
+  const [products, setProducts] = useState([]);
   const [profile, setProfile] = useState(() => readSaved('pm-profile-v1', { name: 'Alex Johnson', email: 'admin@store.com' }));
   const [page, setPage] = useState('Dashboard');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [notice, setNotice] = useState('');
-  useEffect(() => { try { localStorage.setItem('pm-products-v1', JSON.stringify(products)); localStorage.setItem('pm-profile-v1', JSON.stringify(profile)); } catch { setNotice('Browser storage is unavailable. Changes will last for this session.'); } }, [products, profile]);
+  useEffect(() => {
+    let active = true;
+    const fetchProducts = async () => {
+      try {
+        const data = await productAPI.getAll();
+        if (active) setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        if (active) setNotice('Unable to load products. Check that the backend is running.');
+      }
+    };
+    fetchProducts();
+    return () => { active = false; };
+  }, []);
+  useEffect(() => { try { localStorage.setItem('pm-profile-v1', JSON.stringify(profile)); } catch { setNotice('Browser storage is unavailable. Changes will last for this session.'); } }, [profile]);
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 5000); return () => clearTimeout(timer); }, [notice]);
   useEffect(() => { const close = e => { if (e.key === 'Escape') { setDeleting(null); setOpen(false); } }; window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close); }, []);
   const actions = { products, onAdd: () => setPage('Add Product'), onEdit: p => { setEditing(p); setPage('Edit Product'); }, onDelete: setDeleting };
-  const save = product => { if (products.some(p => p.sku.toLowerCase() === product.sku.toLowerCase() && p.id !== product.id)) { setNotice('That SKU already exists. Please use a unique SKU.'); return; } setProducts(old => product.id ? old.map(p => p.id === product.id ? product : p) : [{ ...product, id: crypto.randomUUID() }, ...old]); setPage('Products'); setNotice('Product saved successfully.'); };
+  const save = product => { if (products.some(p => p.sku?.toLowerCase() === product.sku.toLowerCase() && p.id !== product.id)) { setNotice('That SKU already exists. Please use a unique SKU.'); return; } setProducts(old => product.id ? old.map(p => p.id === product.id ? product : p) : [{ ...product, id: crypto.randomUUID() }, ...old]); setPage('Products'); setNotice('Product saved successfully.'); };
   const changes = { count: products.length - 5, low: products.filter(p => p.stock < 10).length - 2, categories: new Set(products.map(p => p.category)).size - 4, value: products.reduce((n,p) => n + p.price*p.stock,0) - initialProducts.reduce((n,p) => n + p.price*p.stock,0) };
   const descriptions = { Dashboard: `Welcome back, ${profile.name.split(' ')[0]}! Here's what's happening with your store today.`, Products: 'View and manage your product inventory.', Categories: 'Organize your products by category.', Settings: 'Manage your store profile.', 'Add Product': 'Add a new product to your inventory.', 'Edit Product': 'Update your product details.' };
   return <div className="min-h-screen bg-[linear-gradient(125deg,#f7f8fe,#edf2ff)]"><Sidebar page={page.includes('Product') ? 'Products' : page} onNavigate={setPage} open={open} onClose={() => setOpen(false)} profile={profile}/><main className="px-5 py-7 lg:ml-[302px] lg:px-[26px] lg:pt-[50px] lg:pb-12"><header className="mb-10 flex flex-wrap items-center justify-between gap-5 px-2"><div><div className="flex items-center gap-3"><button aria-label="Open navigation" onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-blue-100 lg:hidden"><Menu/></button><h1 className="text-4xl leading-tight font-bold tracking-[-1.5px] lg:text-[42px]">{page}</h1></div><p className="mt-1 text-lg text-[#5b6f9d] lg:text-[20px]">{descriptions[page]}</p></div>{page === 'Dashboard' && <div title="Demo dashboard shows a fixed 30-day reporting period" className="flex items-center gap-3 rounded-xl border border-[#cbd5ed] bg-white/70 px-3 py-3 text-base text-[#172a51] shadow-sm"><CalendarDays size={22} className="text-[#6075a1]"/><span>Last 30 Days</span><ChevronDown size={19} className="ml-7 text-[#6075a1]"/></div>}</header>
