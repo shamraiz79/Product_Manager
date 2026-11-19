@@ -123,3 +123,22 @@ def delete_product(
     session.commit()
 
     return {"message": "Product deleted successfully"}
+
+from sqlmodel import select
+
+@router.get("/stats/summary")
+def get_product_stats(session: SessionDep):
+    products = session.exec(select(Product)).all()
+
+    return {
+        "total_products": len(products),
+        "total_categories": len(
+            set(p.category for p in products)
+        ),
+        "low_stock": sum(
+            1 for p in products if 0 < p.stock < 10
+        ),
+        "total_value": sum(
+            p.price * p.stock for p in products
+        )
+    }
